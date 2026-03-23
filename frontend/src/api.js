@@ -57,3 +57,47 @@ export async function triggerDataCollection() {
   if (!res.ok) throw new Error('Data collection failed');
   return res.json();
 }
+
+export async function fetchVNGold() {
+  const res = await fetch(`${API_BASE}/gold/vn`);
+  if (!res.ok) throw new Error('Failed to fetch VN gold');
+  return res.json();
+}
+
+export async function fetchVNPredict(horizon = '7d') {
+  const res = await fetch(`${API_BASE}/gold/vn/predict?horizon=${horizon}`);
+  if (!res.ok) throw new Error('Failed to fetch VN prediction');
+  return res.json();
+}
+
+export async function fetchExplanation(horizon = '7d') {
+  const res = await fetch(`${API_BASE}/predictions/${horizon}/explain`);
+  if (!res.ok) throw new Error('Failed to fetch explanation');
+  return res.json();
+}
+
+// ===== V2 APIs =====
+
+export async function fetchFearGreed(days = 30) {
+  const res = await fetch(`${API_BASE}/fear-greed?days=${days}`);
+  if (!res.ok) throw new Error('Failed to fetch fear & greed');
+  return res.json();
+}
+
+export async function fetchSentiment(days = 7) {
+  const res = await fetch(`${API_BASE}/sentiment?days=${days}`);
+  if (!res.ok) throw new Error('Failed to fetch sentiment');
+  return res.json();
+}
+
+export async function fetchModelCompare(horizon = '7d') {
+  const res = await fetch(`${API_BASE}/models/compare?horizon=${horizon}`);
+  if (!res.ok) throw new Error('Failed to fetch model comparison');
+  return res.json();
+}
+
+export async function fetchBacktestMetrics(horizon = '7d') {
+  const res = await fetch(`${API_BASE}/backtest/metrics?horizon=${horizon}`);
+  if (!res.ok) throw new Error('Failed to fetch backtest metrics');
+  return res.json();
+}

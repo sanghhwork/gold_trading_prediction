@@ -26,6 +26,7 @@ from app.services.feature_engine.macro_features import add_macro_features
 from app.utils.constants import (
     LAG_DAYS, RETURN_PERIODS,
     TREND_THRESHOLD_UP, TREND_THRESHOLD_DOWN,
+    DYNAMIC_TREND_THRESHOLDS,
     PREDICTION_HORIZONS,
 )
 from app.utils.logger import get_logger
@@ -213,23 +214,26 @@ class FeatureBuilder:
         - target_price_{horizon}: Giá close N ngày tới (regression)
         - target_return_{horizon}: % return N ngày tới
         - target_trend_{horizon}: 0=Giảm, 1=Sideway, 2=Tăng (classification)
+        
+        Dynamic thresholds: ±0.5% (1d), ±1% (7d), ±2% (30d)
         """
         for name, days in PREDICTION_HORIZONS.items():
-            # Price target (regression)
+            # Price target (regression) — kept for backward compat
             df[f"target_price_{name}"] = df["close"].shift(-days)
 
-            # Return target
+            # Return target (% change) — primary target for V2
             future_return = (df["close"].shift(-days) / df["close"] - 1)
             df[f"target_return_{name}"] = future_return * 100
 
-            # Trend target (classification)
+            # Trend target (classification) — dynamic threshold per horizon
+            threshold = DYNAMIC_TREND_THRESHOLDS.get(name, 0.01)
             df[f"target_trend_{name}"] = pd.cut(
                 future_return,
-                bins=[-np.inf, TREND_THRESHOLD_DOWN, TREND_THRESHOLD_UP, np.inf],
+                bins=[-np.inf, -threshold, threshold, np.inf],
                 labels=[0, 1, 2],  # Giảm, Sideway, Tăng
             ).astype(float)
 
-        self.logger.info(f"Đã thêm target variables cho {list(PREDICTION_HORIZONS.keys())}")
+        self.logger.info(f"Đã thêm target variables cho {list(PREDICTION_HORIZONS.keys())} (dynamic thresholds)")
         return df
 
     def _clean_features(self, df: pd.DataFrame) -> pd.DataFrame:

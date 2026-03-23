@@ -18,6 +18,7 @@ TICKER_USD_VND = "VND=X"          # USD/VND exchange rate
 TICKER_OIL_WTI = "CL=F"          # Crude Oil WTI Futures
 TICKER_US_10Y = "^TNX"            # US 10-Year Treasury Yield
 TICKER_SP500 = "^GSPC"            # S&P 500 Index
+TICKER_GLD = "GLD"                # SPDR Gold Shares ETF (flows proxy)
 
 # Tất cả tickers cần thu thập từ yfinance
 ALL_YFINANCE_TICKERS = {
@@ -27,6 +28,7 @@ ALL_YFINANCE_TICKERS = {
     "oil_wti": TICKER_OIL_WTI,
     "us_10y": TICKER_US_10Y,
     "sp500": TICKER_SP500,
+    "gld_etf": TICKER_GLD,
 }
 
 # ===== SJC Scraping =====
@@ -94,9 +96,18 @@ PREDICTION_HORIZONS = {
 }
 
 # ===== Trend Classification =====
-TREND_THRESHOLD_UP = 0.005     # >0.5% = Tăng
+TREND_THRESHOLD_UP = 0.005     # >0.5% = Tăng (legacy, dùng cho backward compat)
 TREND_THRESHOLD_DOWN = -0.005  # <-0.5% = Giảm
-# Giữa 2 ngưỡng = Sideway
+
+# Dynamic thresholds: tỷ lệ với horizon — chính xác hơn cho mỗi timeframe
+DYNAMIC_TREND_THRESHOLDS = {
+    "1d": 0.005,   # ±0.5% cho 1 ngày
+    "7d": 0.01,    # ±1.0% cho 1 tuần
+    "30d": 0.02,   # ±2.0% cho 1 tháng
+}
+
+# ===== Walk-Forward Validation =====
+EMBARGO_DAYS = 5  # Gap giữa train/test để tránh autocorrelation
 
 TREND_LABELS = {
     0: "Giảm",

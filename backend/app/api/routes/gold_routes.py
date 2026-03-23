@@ -289,6 +289,39 @@ def get_vn_gold_analysis():
         raise HTTPException(500, str(e))
 
 
+@router.get("/gold/vn/compare")
+def compare_vn_gold_prices():
+    """So sánh giá vàng tất cả đơn vị (SJC, PNJ, DOJI, ...) từ giavang.org."""
+    try:
+        from app.services.data_collector.giavang_org_collector import GiavangOrgCollector
+        collector = GiavangOrgCollector()
+        df = collector.fetch_multi_org_prices()
+
+        if df.empty:
+            raise HTTPException(404, "Khong lay duoc du lieu giavang.org")
+
+        orgs = []
+        for _, row in df.iterrows():
+            orgs.append({
+                "organization": row.get("organization", ""),
+                "region": row.get("region", ""),
+                "buy_price": row.get("buy_price", 0),
+                "sell_price": row.get("sell_price", 0),
+            })
+
+        return {
+            "date": str(df.iloc[0]["date"]),
+            "source": "giavang.org",
+            "total_records": len(orgs),
+            "organizations": orgs,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Compare VN gold error: {e}")
+        raise HTTPException(500, str(e))
+
+
 @router.get("/gold/vn/predict")
 def predict_vn_gold(horizon: str = Query(default="7d")):
     """Dự đoán giá SJC từ XAU/USD forecast."""
@@ -377,4 +410,189 @@ def explain_prediction(horizon: str = "7d"):
     except Exception as e:
         logger.error(f"Explanation error: {e}")
         raise HTTPException(500, str(e))
+
+
+# ==========================================
+# V2: BACKTESTING & RISK METRICS
+# ==========================================
+
+@router.get("/backtest/metrics")
+def get_backtest_metrics(horizon: str = Query(default="7d")):
+    """Lấy backtest + risk metrics cho model."""
+    if horizon not in PREDICTION_HORIZONS:
+        raise HTTPException(400, f"Invalid horizon: {horizon}")
+
+    try:
+        from app.services.backtesting.backtester import Backtester
+        from app.services.backtesting.risk_metrics import RiskMetrics
+
+        trainer = _get_trainer()
+        if horizon not in trainer.trained_models:
+            trainer.train_all(horizon=horizon)
+
+        # Use walk-forward validation as proxy backtest
+        wf_results = trainer.walk_forward_validate(horizon=horizon)
+
+        if not wf_results:
+            return {"error": "Không đủ data cho walk-forward"}
+
+        return {
+            "horizon": horizon,
+            "n_windows": wf_results["n_windows"],
+            "avg_return_mae": wf_results["avg_return_metrics"]["mae"],
+            "avg_return_r2": wf_results["avg_return_metrics"]["r2"],
+            "avg_trend_accuracy": wf_results["avg_trend_metrics"]["accuracy"],
+            "avg_trend_f1": wf_results["avg_trend_metrics"]["f1"],
+            "std_return_mae": wf_results["std_return_metrics"]["mae"],
+            "windows": wf_results["windows"],
+        }
+    except Exception as e:
+        logger.error(f"Backtest error: {e}")
+        raise HTTPException(500, str(e))
+
+
+@router.get("/walk-forward")
+def get_walk_forward(horizon: str = Query(default="7d")):
+    """Chạy walk-forward validation và trả kết quả chi tiết."""
+    if horizon not in PREDICTION_HORIZONS:
+        raise HTTPException(400, f"Invalid horizon: {horizon}")
+
+    try:
+        trainer = _get_trainer()
+        results = trainer.walk_forward_validate(horizon=horizon)
+        return results if results else {"error": "Không đủ data"}
+    except Exception as e:
+        logger.error(f"Walk-forward error: {e}")
+        raise HTTPException(500, str(e))
+
+
+# ==========================================
+# V2: FEAR & GREED + SENTIMENT
+# ==========================================
+
+@router.get("/fear-greed")
+def get_fear_greed(days: int = Query(default=30, ge=1, le=365)):
+    """Lấy Fear & Greed Index."""
+    try:
+        from app.db.database import get_session_factory
+
+        SessionLocal = get_session_factory()
+        db = SessionLocal()
+        try:
+            from datetime import timedelta
+            cutoff = date.today() - timedelta(days=days)
+            records = db.query(MacroIndicator).filter(
+                MacroIndicator.indicator == "fear_greed",
+                MacroIndicator.date >= cutoff,
+            ).order_by(MacroIndicator.date.desc()).all()
+
+            if not records:
+                # Try fetching fresh data
+                from app.services.data_collector.fear_greed_collector import FearGreedCollector
+                fg = FearGreedCollector()
+                fg.collect_and_store()
+                records = db.query(MacroIndicator).filter(
+                    MacroIndicator.indicator == "fear_greed",
+                    MacroIndicator.date >= cutoff,
+                ).order_by(MacroIndicator.date.desc()).all()
+
+            data = [{"date": str(r.date), "value": r.close} for r in records]
+            latest = data[0] if data else None
+
+            # Classification
+            classification = "N/A"
+            if latest:
+                v = latest["value"]
+                if v <= 25:
+                    classification = "Extreme Fear"
+                elif v <= 40:
+                    classification = "Fear"
+                elif v <= 60:
+                    classification = "Neutral"
+                elif v <= 75:
+                    classification = "Greed"
+                else:
+                    classification = "Extreme Greed"
+
+            return {
+                "latest": latest,
+                "classification": classification,
+                "history": data[:30],  # Last 30 entries
+                "total_records": len(data),
+            }
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Fear & Greed error: {e}")
+        raise HTTPException(500, str(e))
+
+
+@router.get("/sentiment")
+def get_sentiment(days: int = Query(default=7)):
+    """Lấy news sentiment summary."""
+    try:
+        from app.services.data_collector.sentiment_analyzer import SentimentAnalyzer
+        analyzer = SentimentAnalyzer()
+        daily = analyzer.get_daily_sentiment(days=days)
+
+        # Overall summary
+        if daily:
+            scores = [v["avg_score"] for v in daily.values()]
+            avg = sum(scores) / len(scores) if scores else 0
+            overall = "Bullish" if avg > 0.1 else "Bearish" if avg < -0.1 else "Neutral"
+        else:
+            avg = 0
+            overall = "N/A"
+
+        return {
+            "overall_sentiment": overall,
+            "avg_score": round(avg, 4),
+            "daily": daily,
+            "period_days": days,
+        }
+    except Exception as e:
+        logger.error(f"Sentiment error: {e}")
+        raise HTTPException(500, str(e))
+
+
+# ==========================================
+# V2: MODEL COMPARISON
+# ==========================================
+
+@router.get("/models/compare")
+def compare_models(horizon: str = Query(default="7d")):
+    """So sánh accuracy tất cả models."""
+    if horizon not in PREDICTION_HORIZONS:
+        raise HTTPException(400, f"Invalid horizon: {horizon}")
+
+    try:
+        trainer = _get_trainer()
+        if horizon not in trainer.trained_models:
+            trainer.train_all(horizon=horizon)
+
+        models = trainer.trained_models.get(horizon, {})
+        comparison = []
+
+        for name, model in models.items():
+            if model is None:
+                continue
+            entry = {
+                "name": name,
+                "type": getattr(model, "model_type", "unknown"),
+                "is_trained": getattr(model, "is_trained", False),
+            }
+            metrics = getattr(model, "train_metrics", {})
+            if metrics:
+                entry["metrics"] = metrics
+            comparison.append(entry)
+
+        return {
+            "horizon": horizon,
+            "models": comparison,
+            "total_models": len(comparison),
+        }
+    except Exception as e:
+        logger.error(f"Model compare error: {e}")
+        raise HTTPException(500, str(e))
+
 

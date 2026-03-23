@@ -30,7 +30,7 @@ def is_gemini_available() -> bool:
         return _is_available
 
     settings = get_settings()
-    if not settings.gemini_api_key or settings.gemini_api_key == "your_gemini_api_key_here":
+    if not settings.gemini_api_key or settings.gemini_api_key == "[GCP_API_KEY]":
         logger.info("Gemini API key chưa cấu hình → sử dụng rule-based analysis")
         _is_available = False
         return False

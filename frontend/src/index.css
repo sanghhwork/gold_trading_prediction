@@ -427,17 +427,52 @@ body {
   color: var(--gold);
 }
 
+/* ===== VN Gold Section ===== */
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 1.5rem 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vn-gold-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ===== V2 Dashboard Grid ===== */
+.v2-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .overview-grid { grid-template-columns: repeat(2, 1fr); }
   .chart-section { grid-template-columns: 1fr; }
   .predictions-grid { grid-template-columns: repeat(2, 1fr); }
   .advisor-section { grid-template-columns: 1fr; }
+  .vn-gold-section { grid-template-columns: 1fr; }
+  .v2-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 640px) {
   .overview-grid { grid-template-columns: 1fr; }
   .predictions-grid { grid-template-columns: 1fr; }
+  .v2-grid { grid-template-columns: 1fr; }
   .main { padding: 1rem; }
   .header { padding: 0.75rem 1rem; }
 }
