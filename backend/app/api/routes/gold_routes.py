@@ -84,7 +84,7 @@ def get_latest_price(
     ).order_by(GoldPrice.date.desc()).first()
 
     if not record:
-        raise HTTPException(404, f"Khong co du lieu cho {source}")
+        raise HTTPException(404, f"Không có dữ liệu cho {source}")
 
     return {
         "date": str(record.date),
@@ -136,7 +136,7 @@ def get_prediction(horizon: str = "7d"):
 
     try:
         pred = trainer.predict(horizon=horizon)
-        trend_map = {0: "Giam", 1: "Sideway", 2: "Tang"}
+        trend_map = {0: "Giảm", 1: "Đi ngang", 2: "Tăng"}
 
         return {
             "date": pred.get("date"),
@@ -145,7 +145,7 @@ def get_prediction(horizon: str = "7d"):
             "confidence_lower": pred.get("confidence_lower"),
             "confidence_upper": pred.get("confidence_upper"),
             "predicted_trend": pred.get("predicted_trend"),
-            "trend_label": trend_map.get(pred.get("predicted_trend", 1), "Sideway"),
+            "trend_label": trend_map.get(pred.get("predicted_trend", 1), "Đi ngang"),
             "trend_probabilities": pred.get("trend_probabilities"),
         }
     except Exception as e:
@@ -164,7 +164,7 @@ def get_all_predictions():
             if horizon not in trainer.trained_models:
                 trainer.train_all(horizon=horizon)
             pred = trainer.predict(horizon=horizon)
-            trend_map = {0: "Giam", 1: "Sideway", 2: "Tang"}
+            trend_map = {0: "Giảm", 1: "Đi ngang", 2: "Tăng"}
             results[horizon] = {
                 "predicted_price": pred.get("predicted_price"),
                 "confidence_lower": pred.get("confidence_lower"),
@@ -195,7 +195,7 @@ def get_market_analysis():
         df = builder.build_features(source="xau_usd", include_macro=True)
 
         if df.empty:
-            raise HTTPException(404, "Khong co du lieu de phan tich")
+            raise HTTPException(404, "Không có dữ liệu để phân tích")
 
         latest = df.iloc[-1].to_dict()
 
@@ -298,7 +298,7 @@ def compare_vn_gold_prices():
         df = collector.fetch_multi_org_prices()
 
         if df.empty:
-            raise HTTPException(404, "Khong lay duoc du lieu giavang.org")
+            raise HTTPException(404, "Không lấy được dữ liệu giavang.org")
 
         orgs = []
         for _, row in df.iterrows():
@@ -336,7 +336,7 @@ def predict_vn_gold(horizon: str = Query(default="7d")):
         predictor = VNGoldPredictor()
         sjc_result = predictor.predict_sjc_price(xau_pred.get("predicted_price", 0))
 
-        trend_map = {0: "Giam", 1: "Sideway", 2: "Tang"}
+        trend_map = {0: "Giảm", 1: "Đi ngang", 2: "Tăng"}
         return {
             "horizon": horizon,
             "xau_usd": {

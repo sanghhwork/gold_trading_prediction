@@ -85,15 +85,15 @@ class MarketAnalyzer:
         rsi = features.get("rsi", 50)
         if rsi > 70:
             signals.append(("RSI", "Overbought", -2))
-            analysis_parts.append(f"RSI = {rsi:.1f} (vung qua mua). Rui ro dieu chinh ngan han.")
+            analysis_parts.append(f"RSI = {rsi:.1f} (vùng quá mua). Rủi ro điều chỉnh ngắn hạn.")
             score -= 20
         elif rsi < 30:
             signals.append(("RSI", "Oversold", 2))
-            analysis_parts.append(f"RSI = {rsi:.1f} (vung qua ban). Co hoi mua vao.")
+            analysis_parts.append(f"RSI = {rsi:.1f} (vùng quá bán). Cơ hội mua vào.")
             score += 20
         else:
             signals.append(("RSI", "Neutral", 0))
-            analysis_parts.append(f"RSI = {rsi:.1f} (vung trung tinh).")
+            analysis_parts.append(f"RSI = {rsi:.1f} (vùng trung tính).")
 
         # ===== 2. MACD Analysis =====
         macd = features.get("macd", 0)
@@ -102,11 +102,11 @@ class MarketAnalyzer:
 
         if macd > macd_signal and macd_hist > 0:
             signals.append(("MACD", "Bullish", 1))
-            analysis_parts.append("MACD cat len tren signal line - tin hieu tang.")
+            analysis_parts.append("MACD cắt lên trên signal line - tín hiệu tăng.")
             score += 15
         elif macd < macd_signal and macd_hist < 0:
             signals.append(("MACD", "Bearish", -1))
-            analysis_parts.append("MACD cat xuong duoi signal line - tin hieu giam.")
+            analysis_parts.append("MACD cắt xuống dưới signal line - tín hiệu giảm.")
             score -= 15
         else:
             signals.append(("MACD", "Neutral", 0))
@@ -115,33 +115,33 @@ class MarketAnalyzer:
         bb_position = features.get("bb_position", 0.5)
         if bb_position > 0.95:
             signals.append(("BB", "Upper Band", -1))
-            analysis_parts.append("Gia cham Bollinger Band tren - co the dieu chinh.")
+            analysis_parts.append("Giá chạm Bollinger Band trên - có thể điều chỉnh.")
             score -= 10
         elif bb_position < 0.05:
             signals.append(("BB", "Lower Band", 1))
-            analysis_parts.append("Gia cham Bollinger Band duoi - co hoi rebound.")
+            analysis_parts.append("Giá chạm Bollinger Band dưới - cơ hội rebound.")
             score += 10
 
         # ===== 4. Moving Average Analysis =====
         sma_50_above_200 = features.get("sma_50_above_200", 0)
         if sma_50_above_200:
             signals.append(("SMA", "Golden Cross", 2))
-            analysis_parts.append("SMA 50 > SMA 200 (Golden Cross) - xu huong tang dai han.")
+            analysis_parts.append("SMA 50 > SMA 200 (Golden Cross) - xu hướng tăng dài hạn.")
             score += 20
         else:
             signals.append(("SMA", "Death Cross", -2))
-            analysis_parts.append("SMA 50 < SMA 200 (Death Cross) - xu huong giam dai han.")
+            analysis_parts.append("SMA 50 < SMA 200 (Death Cross) - xu hướng giảm dài hạn.")
             score -= 20
 
         price_to_sma200 = features.get("price_to_sma_200", 0)
         if price_to_sma200 > 10:
-            analysis_parts.append(f"Gia cao hon SMA 200 {price_to_sma200:.1f}% - co the overextended.")
+            analysis_parts.append(f"Giá cao hơn SMA 200 {price_to_sma200:.1f}% - có thể overextended.")
             score -= 5
 
         # ===== 5. Volatility Analysis =====
         atr_pct = features.get("atr_pct", 0)
         if atr_pct > 3:
-            analysis_parts.append(f"ATR% = {atr_pct:.2f}% - bien dong CAO, can than quan ly rui ro.")
+            analysis_parts.append(f"ATR% = {atr_pct:.2f}% - biến động CAO, cẩn thận quản lý rủi ro.")
             risk_boost = 1
         else:
             risk_boost = 0
@@ -155,20 +155,20 @@ class MarketAnalyzer:
                 prob = trend_probs.get("tang", 0.5)
                 score += int(prob * 30)
                 analysis_parts.append(
-                    f"ML Model du doan: TANG (xac suat {prob:.0%})"
+                    f"ML Model dự đoán: TĂNG (xác suất {prob:.0%})"
                 )
             elif trend == 0:  # Giam
                 prob = trend_probs.get("giam", 0.5)
                 score -= int(prob * 30)
                 analysis_parts.append(
-                    f"ML Model du doan: GIAM (xac suat {prob:.0%})"
+                    f"ML Model dự đoán: GIẢM (xác suất {prob:.0%})"
                 )
             else:
-                analysis_parts.append("ML Model du doan: SIDEWAY")
+                analysis_parts.append("ML Model dự đoán: ĐI NGANG")
 
             if "predicted_price" in prediction:
                 analysis_parts.append(
-                    f"Gia du doan: ${prediction['predicted_price']:,.2f} "
+                    f"Giá dự đoán: ${prediction['predicted_price']:,.2f} "
                     f"[${prediction.get('confidence_lower', 0):,.2f} - "
                     f"${prediction.get('confidence_upper', 0):,.2f}]"
                 )

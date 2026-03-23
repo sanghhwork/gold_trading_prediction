@@ -50,7 +50,7 @@ class InvestmentAdvisor:
         # 1. Build features
         df = self.feature_builder.build_features(source=source, include_macro=True)
         if df.empty:
-            return self._empty_advice("Khong co du lieu")
+            return self._empty_advice("Không có dữ liệu")
 
         # 2. Get latest features
         latest_row = df.iloc[-1]
@@ -104,7 +104,7 @@ class InvestmentAdvisor:
         summary_parts = []
 
         # Current state
-        summary_parts.append(f"Gia hien tai: ${current_price:,.2f}")
+        summary_parts.append(f"Giá hiện tại: ${current_price:,.2f}")
 
         # Trend
         rsi = features.get("rsi", 50)
@@ -112,35 +112,35 @@ class InvestmentAdvisor:
         sma_cross = features.get("sma_50_above_200", 0)
 
         if sma_cross:
-            summary_parts.append("Xu huong dai han: TANG (Golden Cross)")
+            summary_parts.append("Xu hướng dài hạn: TĂNG (Golden Cross)")
         else:
-            summary_parts.append("Xu huong dai han: GIAM (Death Cross)")
+            summary_parts.append("Xu hướng dài hạn: GIẢM (Death Cross)")
 
         # Prediction
         if prediction.get("predicted_price"):
             pred_price = prediction["predicted_price"]
             change_pct = (pred_price - current_price) / current_price * 100
-            direction = "tang" if change_pct > 0 else "giam"
+            direction = "tăng" if change_pct > 0 else "giảm"
             summary_parts.append(
-                f"Du doan {horizon}: ${pred_price:,.2f} ({direction} {abs(change_pct):.1f}%)"
+                f"Dự đoán {horizon}: ${pred_price:,.2f} ({direction} {abs(change_pct):.1f}%)"
             )
 
         # Recommendation text
         rec_text = {
-            "STRONG_BUY": "KHUYEN NGHI MUA MANH - Nhieu tin hieu tang cung luc",
-            "BUY": "KHUYEN NGHI MUA - Xu huong tich cuc, co the tich luy",
-            "HOLD": "KHUYEN NGHI GIU - Thi truong chua ro xu huong",
-            "SELL": "KHUYEN NGHI BAN - Tin hieu giam, can than",
-            "STRONG_SELL": "KHUYEN NGHI BAN MANH - Nhieu tin hieu giam cung luc",
-        }.get(rec, "GIU")
+            "STRONG_BUY": "KHUYẾN NGHỊ MUA MẠNH - Nhiều tín hiệu tăng cùng lúc",
+            "BUY": "KHUYẾN NGHỊ MUA - Xu hướng tích cực, có thể tích lũy",
+            "HOLD": "KHUYẾN NGHỊ GIỮ - Thị trường chưa rõ xu hướng",
+            "SELL": "KHUYẾN NGHỊ BÁN - Tín hiệu giảm, cẩn thận",
+            "STRONG_SELL": "KHUYẾN NGHỊ BÁN MẠNH - Nhiều tín hiệu giảm cùng lúc",
+        }.get(rec, "GIỮ")
 
         summary_parts.append(f"\n>> {rec_text}")
 
         # Risk warning
         if risk in ("HIGH", "VERY_HIGH"):
             summary_parts.append(
-                "\n⚠ LUU Y: Bien dong cao, chi dau tu so tien san sang mat. "
-                "Dat stop-loss."
+                "\n⚠ LƯU Ý: Biến động cao, chỉ đầu tư số tiền sẵn sàng mất. "
+                "Đặt stop-loss."
             )
 
         return {
@@ -172,7 +172,7 @@ class InvestmentAdvisor:
             "recommendation": "HOLD",
             "confidence": 0,
             "risk_level": "HIGH",
-            "summary": f"Khong the tao loi khuyen: {reason}",
+            "summary": f"Không thể tạo lời khuyên: {reason}",
             "analysis": {},
             "prediction": {},
             "technical_snapshot": {},

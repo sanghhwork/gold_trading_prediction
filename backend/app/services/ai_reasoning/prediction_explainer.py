@@ -26,58 +26,58 @@ logger = get_logger(__name__)
 # Mapping feature names → human-readable descriptions (tiếng Việt)
 FEATURE_DESCRIPTIONS = {
     # Macro
-    "dxy": "Chi so USD (DXY)",
-    "dxy_change_1d": "DXY thay doi 1 ngay",
-    "dxy_change_5d": "DXY thay doi 5 ngay",
+    "dxy": "Chỉ số USD (DXY)",
+    "dxy_change_1d": "DXY thay đổi 1 ngày",
+    "dxy_change_5d": "DXY thay đổi 5 ngày",
     "dxy_rsi_14": "DXY RSI",
-    "oil_wti": "Gia dau WTI",
-    "oil_wti_change_1d": "Gia dau thay doi 1 ngay",
-    "oil_wti_change_5d": "Gia dau thay doi 5 ngay",
-    "us_10y": "Lai suat US 10Y",
-    "us_10y_change_1d": "Lai suat 10Y thay doi 1 ngay",
-    "usd_vnd": "Ty gia USD/VND",
-    "usd_vnd_change_1d": "Ty gia USD/VND thay doi",
-    "sp500": "Chi so S&P 500",
-    "sp500_change_1d": "S&P 500 thay doi 1 ngay",
-    "gold_dxy_ratio": "Ti le Vang/DXY",
-    "gold_dxy_ratio_change": "Vang/DXY thay doi",
-    "gold_oil_ratio": "Ti le Vang/Dau",
+    "oil_wti": "Giá dầu WTI",
+    "oil_wti_change_1d": "Giá dầu thay đổi 1 ngày",
+    "oil_wti_change_5d": "Giá dầu thay đổi 5 ngày",
+    "us_10y": "Lãi suất US 10Y",
+    "us_10y_change_1d": "Lãi suất 10Y thay đổi 1 ngày",
+    "usd_vnd": "Tỷ giá USD/VND",
+    "usd_vnd_change_1d": "Tỷ giá USD/VND thay đổi",
+    "sp500": "Chỉ số S&P 500",
+    "sp500_change_1d": "S&P 500 thay đổi 1 ngày",
+    "gold_dxy_ratio": "Tỉ lệ Vàng/DXY",
+    "gold_dxy_ratio_change": "Vàng/DXY thay đổi",
+    "gold_oil_ratio": "Tỉ lệ Vàng/Dầu",
     # Technical
     "rsi": "RSI (14)",
     "macd": "MACD",
     "macd_histogram": "MACD Histogram",
-    "bb_position": "Vi tri Bollinger Band",
-    "bb_width": "Do rong Bollinger Band",
-    "atr_pct": "Bien dong ATR %",
+    "bb_position": "Vị trí Bollinger Band",
+    "bb_width": "Độ rộng Bollinger Band",
+    "atr_pct": "Biến động ATR %",
     "sma_50_above_200": "Golden Cross (SMA 50>200)",
-    "price_to_sma_200": "Gia so voi SMA 200 (%)",
+    "price_to_sma_200": "Giá so với SMA 200 (%)",
     "stoch_k": "Stochastic %K",
     "williams_r": "Williams %R",
     # Price/Volume
-    "close": "Gia dong cua",
-    "volume": "Khoi luong giao dich",
-    "return_1d": "Loi nhuan 1 ngay (%)",
-    "return_5d": "Loi nhuan 5 ngay (%)",
-    "return_20d": "Loi nhuan 20 ngay (%)",
-    "volatility_5d": "Bien dong 5 ngay",
-    "volatility_20d": "Bien dong 20 ngay",
+    "close": "Giá đóng cửa",
+    "volume": "Khối lượng giao dịch",
+    "return_1d": "Lợi nhuận 1 ngày (%)",
+    "return_5d": "Lợi nhuận 5 ngày (%)",
+    "return_20d": "Lợi nhuận 20 ngày (%)",
+    "volatility_5d": "Biến động 5 ngày",
+    "volatility_20d": "Biến động 20 ngày",
     # Calendar
-    "day_of_week": "Ngay trong tuan",
-    "month": "Thang",
-    "quarter": "Quy",
+    "day_of_week": "Ngày trong tuần",
+    "month": "Tháng",
+    "quarter": "Quý",
 }
 
 # Mapping feature → macro context (tại sao ảnh hưởng vàng)
 FEATURE_CONTEXT = {
-    "dxy": "USD manh thuong lam vang giam (nghich bien)",
-    "oil_wti": "Dau tang → lam phat ky vong tang → vang tang",
-    "us_10y": "Lai suat tang → chi phi co hoi giu vang tang → vang giam",
-    "sp500": "Chung khoan tang → risk appetite cao → vang giam (safe-haven giam)",
-    "usd_vnd": "USD/VND tang → gia vang VN tang theo",
-    "rsi": "RSI > 70: qua mua (co the giam), RSI < 30: qua ban (co the tang)",
-    "sma_50_above_200": "Golden Cross → xu huong tang dai han",
-    "gold_dxy_ratio": "Ti le cao → vang dat so voi USD",
-    "atr_pct": "Bien dong cao → rui ro lon",
+    "dxy": "USD mạnh thường làm vàng giảm (nghịch biến)",
+    "oil_wti": "Dầu tăng → lạm phát kỳ vọng tăng → vàng tăng",
+    "us_10y": "Lãi suất tăng → chi phí cơ hội giữ vàng tăng → vàng giảm",
+    "sp500": "Chứng khoán tăng → risk appetite cao → vàng giảm (safe-haven giảm)",
+    "usd_vnd": "USD/VND tăng → giá vàng VN tăng theo",
+    "rsi": "RSI > 70: quá mua (có thể giảm), RSI < 30: quá bán (có thể tăng)",
+    "sma_50_above_200": "Golden Cross → xu hướng tăng dài hạn",
+    "gold_dxy_ratio": "Tỉ lệ cao → vàng đắt so với USD",
+    "atr_pct": "Biến động cao → rủi ro lớn",
 }
 
 
@@ -150,7 +150,7 @@ class PredictionExplainer:
             return {
                 "model_name": model.name,
                 "drivers": [],
-                "summary": f"Khong the giai thich du doan: {str(e)}",
+                "summary": f"Không thể giải thích dự đoán: {str(e)}",
                 "base_value": 0,
             }
 
@@ -180,7 +180,7 @@ class PredictionExplainer:
                 "value": round(float(feat_val), 4),
                 "shap_value": round(float(shap_val), 4),
                 "direction": direction,
-                "impact": "cao" if abs(shap_val) > np.mean(np.abs(shap_values)) * 2 else "trung binh",
+                "impact": "cao" if abs(shap_val) > np.mean(np.abs(shap_values)) * 2 else "trung bình",
                 "context": context,
             }
             drivers.append(driver)
@@ -190,23 +190,23 @@ class PredictionExplainer:
     def _build_summary(self, drivers: list, model_type: str) -> str:
         """Tạo summary text từ drivers."""
         if not drivers:
-            return "Khong du du lieu de giai thich."
+            return "Không đủ dữ liệu để giải thích."
 
         # Top bullish và bearish drivers
         bullish = [d for d in drivers if d["direction"] == "tang"]
         bearish = [d for d in drivers if d["direction"] == "giam"]
 
         parts = []
-        parts.append("YEU TO CHINH ANH HUONG DU DOAN:")
+        parts.append("YẾU TỐ CHÍNH ẢNH HƯỞNG DỰ ĐOÁN:")
 
         if bullish:
-            parts.append("\n📈 Day gia TANG:")
+            parts.append("\n📈 Đẩy giá TĂNG:")
             for d in bullish[:3]:
                 ctx = f" ({d['context']})" if d['context'] else ""
                 parts.append(f"  + {d['display_name']} = {d['value']}{ctx}")
 
         if bearish:
-            parts.append("\n📉 Day gia GIAM:")
+            parts.append("\n📉 Đẩy giá GIẢM:")
             for d in bearish[:3]:
                 ctx = f" ({d['context']})" if d['context'] else ""
                 parts.append(f"  - {d['display_name']} = {d['value']}{ctx}")

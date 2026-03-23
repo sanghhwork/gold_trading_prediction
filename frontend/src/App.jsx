@@ -43,7 +43,7 @@ function App() {
       setVnGold(vnData);
       setFearGreed(fgData);
     } catch (e) {
-      setError('Khong the tai du lieu. Hay dam bao backend dang chay.');
+      setError('Không thể tải dữ liệu. Hãy đảm bảo backend đang chạy.');
       console.error(e);
     }
     setLoading(false);
@@ -94,7 +94,7 @@ function App() {
             type="gold"
           />
           <StatCard
-            label="SJC Ban"
+            label="SJC Bán"
             value={vnGold?.sjc_actual ? `${(vnGold.sjc_actual.sell / 1e6).toFixed(1)}M` : '--'}
             subtitle={vnGold?.sjc_actual ? `Mua: ${(vnGold.sjc_actual.buy / 1e6).toFixed(1)}M` : ''}
             type="green"
@@ -106,7 +106,7 @@ function App() {
             type={vnGold?.premium_analysis?.premium_pct > 10 ? 'red' : 'blue'}
           />
           <StatCard
-            label="Du lieu trong DB"
+            label="Dữ liệu trong DB"
             value={summary ? `${summary.xau_usd_records?.toLocaleString()}` : '--'}
             subtitle={`SJC: ${summary?.sjc_records || 0} | Macro: ${summary?.macro_records || 0}`}
             type="blue"
@@ -117,8 +117,8 @@ function App() {
         <div className="chart-section">
           <div className="card">
             <div className="card-header">
-              <span className="card-title">📈 Bieu do gia vang XAU/USD (1 nam)</span>
-              <button className="btn btn-outline" onClick={loadData}>Lam moi</button>
+              <span className="card-title">📈 Biểu đồ giá vàng XAU/USD (1 năm)</span>
+              <button className="btn btn-outline" onClick={loadData}>Làm mới</button>
             </div>
             <div className="chart-container">
               <PriceChart data={prices} />
@@ -127,20 +127,20 @@ function App() {
 
           <div className="card">
             <div className="card-header">
-              <span className="card-title">🔮 Du doan</span>
+              <span className="card-title">🔮 Dự đoán</span>
               <button className="btn btn-gold" onClick={loadPredictions} disabled={predLoading}>
-                {predLoading ? 'Dang chay...' : predictions ? 'Cap nhat' : 'Chay du doan'}
+                {predLoading ? 'Đang chạy...' : predictions ? 'Cập nhật' : 'Chạy dự đoán'}
               </button>
             </div>
             {predLoading ? (
-              <div className="loading"><div className="spinner" /><p>Dang train ML models...</p></div>
+              <div className="loading"><div className="spinner" /><p>Đang huấn luyện ML models...</p></div>
             ) : predictions ? (
               <PredictionPanel predictions={predictions} />
             ) : (
               <div className="loading">
                 <p style={{ color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center' }}>
-                  Bam "Chay du doan" de khoi chay ML models<br />
-                  (lan dau mat ~30 giay)
+                   Bấm "Chạy dự đoán" để khởi chạy ML models<br />
+                   (lần đầu mất ~30 giây)
                 </p>
               </div>
             )}
@@ -150,23 +150,23 @@ function App() {
         {/* ===== VN Gold Section ===== */}
         {(vnGold || vnPredict) && (
           <>
-            <div className="section-title">🇻🇳 Vang Viet Nam (SJC)</div>
+            <div className="section-title">🇻🇳 Vàng Việt Nam (SJC)</div>
             <div className="vn-gold-section">
               <div className="card">
                 <div className="card-header">
-                  <span className="card-title">💰 Phan tich Premium SJC</span>
+                  <span className="card-title">💰 Phân tích Premium SJC</span>
                 </div>
                 <PremiumPanel vnGold={vnGold} />
               </div>
               <div className="card">
                 <div className="card-header">
-                  <span className="card-title">🔮 Du doan gia SJC</span>
+                  <span className="card-title">🔮 Dự đoán giá SJC</span>
                 </div>
                 {vnPredict ? (
                   <VNPredictPanel data={vnPredict} />
                 ) : (
                   <div className="loading" style={{ minHeight: 120 }}>
-                    <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Bam "Chay du doan" o tren</p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Bấm "Chạy dự đoán" ở trên</p>
                   </div>
                 )}
               </div>
@@ -178,7 +178,7 @@ function App() {
         {explanation?.price_explanation?.drivers?.length > 0 && (
           <div className="card" style={{ marginBottom: '1.5rem' }}>
             <div className="card-header">
-              <span className="card-title">🧠 Tai sao model du doan nhu vay? (SHAP)</span>
+              <span className="card-title">🧠 Tại sao model dự đoán như vậy? (SHAP)</span>
             </div>
             <SHAPPanel explanation={explanation.price_explanation} />
           </div>
@@ -189,14 +189,14 @@ function App() {
           <div className="advisor-section">
             <div className="card">
               <div className="card-header">
-                <span className="card-title">💡 Loi khuyen dau tu</span>
+                <span className="card-title">💡 Lời khuyên đầu tư</span>
                 <span className={`risk-badge risk-${advice.risk_level}`}>{advice.risk_level}</span>
               </div>
               <AdvisorPanel advice={advice} />
             </div>
             <div className="card">
               <div className="card-header">
-                <span className="card-title">📊 Chi bao ky thuat</span>
+                <span className="card-title">📊 Chỉ báo kỹ thuật</span>
               </div>
               <TechnicalPanel snapshot={advice.technical_snapshot} />
             </div>
@@ -207,7 +207,7 @@ function App() {
         {advice?.analysis && (
           <div className="card" style={{ marginBottom: '1.5rem' }}>
             <div className="card-header">
-              <span className="card-title">🔍 Phan tich thi truong</span>
+              <span className="card-title">🔍 Phân tích thị trường</span>
               <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                 Powered by: {advice.analysis.ai_provider === 'gemini' ? 'Google Gemini AI' : 'Rule-based Engine'}
               </span>
@@ -219,7 +219,7 @@ function App() {
         {/* ===== V2: Market Sentiment Section ===== */}
         {(fearGreed || sentiment || modelCompare) && (
           <>
-            <div className="section-title">📊 V2 Dashboard</div>
+            <div className="section-title">📊 Bảng điều khiển V2</div>
             <div className="v2-grid">
               {fearGreed && <FearGreedPanel data={fearGreed} />}
               {sentiment && <SentimentPanel data={sentiment} />}
@@ -245,7 +245,7 @@ function Header() {
       </div>
       <div className="header-status">
         <div className="status-dot" />
-        <span>System Online</span>
+        <span>Hệ thống hoạt động</span>
       </div>
     </header>
   );
@@ -254,7 +254,7 @@ function Header() {
 function LoadingScreen() {
   return (
     <div className="app"><Header /><main className="main">
-      <div className="loading"><div className="spinner" /><p>Dang tai du lieu...</p></div>
+      <div className="loading"><div className="spinner" /><p>Đang tải dữ liệu...</p></div>
     </main></div>
   );
 }
@@ -264,7 +264,7 @@ function ErrorScreen({ error, onRetry }) {
     <div className="app"><Header /><main className="main">
       <div className="error-msg">{error}</div>
       <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-        <button className="btn btn-gold" onClick={onRetry}>Thu lai</button>
+        <button className="btn btn-gold" onClick={onRetry}>Thử lại</button>
       </div>
     </main></div>
   );
@@ -351,7 +351,7 @@ function PredictionPanel({ predictions }) {
 }
 
 function PremiumPanel({ vnGold }) {
-  if (!vnGold) return <div className="loading" style={{ minHeight: 120 }}><p style={{ color: '#94a3b8' }}>Khong co du lieu SJC</p></div>;
+  if (!vnGold) return <div className="loading" style={{ minHeight: 120 }}><p style={{ color: '#94a3b8' }}>Không có dữ liệu SJC</p></div>;
 
   const xau = vnGold.xau_usd || {};
   const conv = vnGold.sjc_converted || {};
@@ -363,13 +363,13 @@ function PremiumPanel({ vnGold }) {
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
         <div style={{ padding: '0.75rem', background: '#0a0e17', borderRadius: 12, border: '1px solid #2a3a4f' }}>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Gia the gioi quy doi</div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Giá thế giới quy đổi</div>
           <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#94a3b8' }}>
             {conv.world_price_vnd ? `${(conv.world_price_vnd / 1e6).toFixed(1)}M` : '--'}
           </div>
         </div>
         <div style={{ padding: '0.75rem', background: '#0a0e17', borderRadius: 12, border: '1px solid #2a3a4f' }}>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>SJC thuc te (Ban)</div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>SJC thực tế (Bán)</div>
           <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fbbf24' }}>
             {actual.sell ? `${(actual.sell / 1e6).toFixed(1)}M` : '--'}
           </div>
@@ -389,7 +389,7 @@ function PremiumPanel({ vnGold }) {
           </div>
           {isHighPremium && (
             <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.25rem' }}>
-              ⚠️ Premium cao bat thuong (binh thuong 3-8%)
+              ⚠️ Premium cao bất thường (bình thường 3-8%)
             </div>
           )}
         </div>
@@ -413,18 +413,18 @@ function VNPredictPanel({ data }) {
     <div>
       <div style={{ marginBottom: '0.75rem' }}>
         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>
-          Du doan {data.horizon} - XAU/USD: ${xau.predicted_price?.toLocaleString()} ({xau.predicted_trend})
+          Dự đoán {data.horizon} - XAU/USD: ${xau.predicted_price?.toLocaleString()} ({xau.predicted_trend})
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
         <div style={{ padding: '0.75rem', background: '#0a0e17', borderRadius: 12, border: '1px solid #2a3a4f', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SJC Mua (du doan)</div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SJC Mua (dự đoán)</div>
           <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#22c55e' }}>
             {sjc.buy_predicted ? `${(sjc.buy_predicted / 1e6).toFixed(1)}M` : '--'}
           </div>
         </div>
         <div style={{ padding: '0.75rem', background: '#0a0e17', borderRadius: 12, border: '1px solid #2a3a4f', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SJC Ban (du doan)</div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SJC Bán (dự đoán)</div>
           <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fbbf24' }}>
             {sjc.sell_predicted ? `${(sjc.sell_predicted / 1e6).toFixed(1)}M` : '--'}
           </div>
@@ -510,7 +510,7 @@ function AdvisorPanel({ advice }) {
       </div>
       <div style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-          <span className="tech-label">Do tin cay</span>
+          <span className="tech-label">Độ tin cậy</span>
           <span style={{ fontWeight: 600 }}>{(advice.confidence * 100).toFixed(0)}%</span>
         </div>
         <div className="confidence-bar">
