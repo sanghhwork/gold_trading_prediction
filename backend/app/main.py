@@ -24,9 +24,12 @@ async def lifespan(app: FastAPI):
     logger.info(f"Environment: {settings.app_env}")
     logger.info(f"Debug mode: {settings.debug}")
     
-    # Start scheduler (production only or if explicitly enabled)
-    from app.scheduler import start_scheduler, stop_scheduler
+    # Start scheduler (if enabled in config)
+    from app.scheduler import start_scheduler, stop_scheduler, schedule_startup_catchup
     start_scheduler()
+    
+    # Catch-up: nếu data XAU/USD cũ → schedule one-off collect (non-blocking)
+    schedule_startup_catchup()
     
     yield
     

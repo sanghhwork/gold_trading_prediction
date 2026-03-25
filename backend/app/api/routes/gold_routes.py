@@ -596,3 +596,22 @@ def compare_models(horizon: str = Query(default="7d")):
         raise HTTPException(500, str(e))
 
 
+# ==========================================
+# SCHEDULER MANAGEMENT
+# ==========================================
+
+@router.get("/scheduler/status")
+def get_scheduler_status_api():
+    """Xem trạng thái scheduler, danh sách jobs, next run times."""
+    logger.info("GET /scheduler/status")
+    from app.scheduler import get_scheduler_status
+    return get_scheduler_status()
+
+
+@router.post("/scheduler/trigger-collect")
+def trigger_collect_now_api():
+    """Trigger thu thập dữ liệu ngay lập tức (không đợi schedule)."""
+    logger.info("POST /scheduler/trigger-collect")
+    from app.scheduler import trigger_collect_now
+    result = trigger_collect_now()
+    return result

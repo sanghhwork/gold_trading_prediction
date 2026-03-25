@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     )
 
     # ===== Scheduler =====
+    scheduler_enabled: bool = Field(default=True, description="Bật/tắt scheduler tự động")
     daily_collect_time: str = Field(default="08:00", description="Giờ thu thập dữ liệu hàng ngày (HH:MM)")
     weekly_retrain_day: int = Field(default=0, description="Ngày retrain hàng tuần (0=Monday)")
 
