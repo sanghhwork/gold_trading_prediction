@@ -31,9 +31,9 @@ function App() {
     setError(null);
     try {
       const [priceData, latestData, summaryData, vnData, fgData] = await Promise.all([
-        fetchGoldPrices('xau_usd', 365),
-        fetchLatestPrice('xau_usd'),
-        fetchGoldSummary(),
+        fetchGoldPrices('xau_usd', 365).catch(() => ({ data: [] })),
+        fetchLatestPrice('xau_usd').catch(() => null),
+        fetchGoldSummary().catch(() => null),
         fetchVNGold().catch(() => null),
         fetchFearGreed(30).catch(() => null),
       ]);
