@@ -22,11 +22,9 @@ env/
 *.sqlite3
 data/*.db
 
-# ML Models
-saved_models/*.pkl
-saved_models/*.h5
-saved_models/*.keras
-saved_models/*.joblib
+# ML Models - ignore tất cả, giữ .gitkeep
+saved_models/*
+!saved_models/.gitkeep
 
 # Jupyter
 .ipynb_checkpoints/
@@ -42,8 +40,9 @@ notebooks/.ipynb_checkpoints/
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs - ignore tất cả, giữ .gitkeep
 logs/
+backend/logs/
 *.log
 
 # Node (frontend)
