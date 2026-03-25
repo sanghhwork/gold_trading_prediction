@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Application code
 COPY app/ app/
+COPY scripts/ scripts/
 
 # Create directories
 RUN mkdir -p /app/data /app/saved_models /app/logs
