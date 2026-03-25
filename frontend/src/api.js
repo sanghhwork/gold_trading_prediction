@@ -1,4 +1,4 @@
-const API_BASE = 'http://127.0.0.1:8001/api/v1';
+const API_BASE = import.meta.env.DEV ? 'http://127.0.0.1:8001/api/v1' : '/api/v1';
 
 export async function fetchGoldPrices(source = 'xau_usd', days = 90) {
   const res = await fetch(`${API_BASE}/gold/prices?source=${source}&days=${days}`);
