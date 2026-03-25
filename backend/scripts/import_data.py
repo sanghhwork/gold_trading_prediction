@@ -2,7 +2,7 @@
 Import du lieu tu CSV files vao PostgreSQL.
 Chay script nay tren server sau khi upload CSV files.
 
-Usage: python import_data.py
+Usage: python scripts/import_data.py
 """
 import csv
 import os
@@ -18,8 +18,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from app.db.database import get_engine, init_db
 from sqlalchemy import text
 
-PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
-EXPORT_DIR = os.path.join(PROJECT_ROOT, 'data', 'export')
+# Smart path: check Docker path first, fallback to local
+DOCKER_EXPORT_DIR = '/app/data/export'
+LOCAL_EXPORT_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'export')
+
+if os.path.exists(DOCKER_EXPORT_DIR):
+    EXPORT_DIR = DOCKER_EXPORT_DIR
+else:
+    EXPORT_DIR = LOCAL_EXPORT_DIR
 
 # Map table -> columns that should be treated as NULL if empty
 NULLABLE_COLUMNS = {
@@ -42,8 +48,6 @@ def import_table(engine, table_name, csv_path):
             print(f"[SKIP] {table_name}: empty CSV")
             return 0
         
-        nullable = NULLABLE_COLUMNS.get(table_name, [])
-        
         with engine.begin() as conn:
             # Clear existing data
             conn.execute(text(f"DELETE FROM {table_name}"))
@@ -51,11 +55,10 @@ def import_table(engine, table_name, csv_path):
             inserted = 0
             for row in rows:
                 values = {}
+                nullable = NULLABLE_COLUMNS.get(table_name, [])
                 for col in columns_no_id:
                     val = row[col]
-                    if val == '' or val is None:
-                        values[col] = None
-                    elif col in nullable and val == '':
+                    if val == '' or val is None or (col in nullable and val == ''):
                         values[col] = None
                     else:
                         values[col] = val
@@ -73,24 +76,29 @@ def import_table(engine, table_name, csv_path):
             return inserted
 
 def main():
-    print(f"[INFO] CSV dir: {os.path.abspath(EXPORT_DIR)}")
+    export_dir = os.path.abspath(EXPORT_DIR)
+    print(f"[INFO] CSV dir: {export_dir}")
     
-    if not os.path.exists(EXPORT_DIR):
-        print(f"[ERROR] Export dir not found: {EXPORT_DIR}")
-        print("[INFO] Upload CSV files sau do chay lai script nay.")
+    if not os.path.exists(export_dir):
+        print(f"[ERROR] Export dir not found: {export_dir}")
+        print("[INFO] Upload CSV files vao data/export/ truoc khi chay script.")
         return
+    
+    csv_files = [f for f in os.listdir(export_dir) if f.endswith('.csv')]
+    if not csv_files:
+        print("[ERROR] No CSV files found!")
+        return
+    
+    print(f"[INFO] Found {len(csv_files)} CSV files: {csv_files}")
     
     # Initialize DB tables
     init_db()
     engine = get_engine()
     
     total = 0
-    for csv_file in sorted(os.listdir(EXPORT_DIR)):
-        if not csv_file.endswith('.csv'):
-            continue
-        
+    for csv_file in sorted(csv_files):
         table_name = csv_file.replace('.csv', '')
-        csv_path = os.path.join(EXPORT_DIR, csv_file)
+        csv_path = os.path.join(export_dir, csv_file)
         
         count = import_table(engine, table_name, csv_path)
         total += count
