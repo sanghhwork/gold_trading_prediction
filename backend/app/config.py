@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     gemini_api_key: Optional[str] = Field(default=None, description="Google Gemini API key")
     deepseek_api_key: Optional[str] = Field(default=None, description="DeepSeek API key (backup)")
 
+    # ===== Data Collection APIs =====
+    alpha_vantage_api_key: Optional[str] = Field(default=None, description="Alpha Vantage API key")
+    fred_api_key: Optional[str] = Field(default=None, description="FRED API key")
+    
+    # ===== Data Collection Resilience =====
+    collector_max_retries: int = Field(default=3, description="Số lần retry tối đa cho collectors")
+    collector_retry_delay: float = Field(default=2.0, description="Delay (s) retry cơ bản")
+    alpha_vantage_call_delay: float = Field(default=15.0, description="Rate limit pause cho Alpha Vantage")
+
     # ===== Data Collection =====
     sjc_scrape_interval: int = Field(default=60, description="SJC scraping interval (minutes)")
     historical_years: int = Field(default=5, description="Số năm lịch sử thu thập")

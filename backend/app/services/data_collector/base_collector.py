@@ -2,9 +2,11 @@
 Gold Predictor - Base Collector
 Abstract base class cho tất cả data collectors.
 
+V2: Tích hợp ResilientSession cho retry logic, UA rotation, rate limiting.
+
 Điểm mở rộng tương lai:
-- Thêm retry logic với exponential backoff
 - Thêm concurrent collection (asyncio)
+- Thêm circuit breaker pattern
 """
 
 from abc import ABC, abstractmethod
@@ -15,6 +17,7 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from app.db.database import get_session_factory
+from app.services.data_collector.http_utils import ResilientSession
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -26,6 +29,29 @@ class BaseCollector(ABC):
     def __init__(self, name: str):
         self.name = name
         self.logger = get_logger(f"collector.{name}")
+        self._session: Optional[ResilientSession] = None
+
+    def _get_session(self) -> ResilientSession:
+        """
+        Lấy ResilientSession (lazy init).
+        Tất cả collectors dùng chung pattern này để có retry + UA rotation.
+        
+        Điểm mở rộng: override method này trong subclass nếu cần
+        custom config (vd: max_retries khác, timeout khác).
+        """
+        if self._session is None:
+            try:
+                from app.config import get_settings
+                settings = get_settings()
+                self._session = ResilientSession(
+                    max_retries=getattr(settings, 'collector_max_retries', 3),
+                    retry_delay=getattr(settings, 'collector_retry_delay', 2.0),
+                )
+            except Exception:
+                # Fallback nếu config chưa có settings mới
+                self._session = ResilientSession()
+            self.logger.info(f"[{self.name}] ResilientSession khởi tạo thành công")
+        return self._session
 
     @abstractmethod
     def fetch_data(

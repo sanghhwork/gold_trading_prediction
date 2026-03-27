@@ -37,9 +37,13 @@ SJC_BACKUP_URL = "https://www.sjc.com.vn"
 
 # ===== News Sources =====
 NEWS_SOURCES = {
-    "cafef": "https://cafef.vn/vang.chn",
+    "cafef": "https://cafef.vn/du-lieu/gia-vang-hom-nay/trong-nuoc.chn",
     "kitco": "https://www.kitco.com/news/gold",
 }
+
+# ===== External APIs =====
+VANG_TODAY_API_URL = "https://vang.today/prices.php"
+ALPHA_VANTAGE_BASE_URL = "https://www.alphavantage.co/query"
 
 # ===== Technical Indicators Parameters =====
 # Moving Averages

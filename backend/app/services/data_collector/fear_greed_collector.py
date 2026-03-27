@@ -1,6 +1,7 @@
 """
-Gold Predictor - Fear & Greed Index Collector
+Gold Predictor - Fear & Greed Index Collector (V2 - Resilient)
 Thu thập Fear & Greed Index từ Alternative.me API (free).
+Dùng ResilientSession với UA rotation, retry logic.
 
 API: https://api.alternative.me/fng/?limit=30&format=json
 Dữ liệu: { value: 0-100, value_classification: "Extreme Fear"/"Greed"/... }
@@ -16,7 +17,6 @@ from datetime import date, datetime, timedelta
 from typing import Optional
 
 import pandas as pd
-import requests
 from sqlalchemy.orm import Session
 
 from app.services.data_collector.base_collector import BaseCollector
@@ -72,7 +72,7 @@ class FearGreedCollector(BaseCollector):
         self.logger.info(f"Fetching Fear & Greed Index ({days} days)...")
 
         try:
-            response = requests.get(
+            response = self._get_session().get(
                 FEAR_GREED_API_URL,
                 params={"limit": days, "format": "json"},
                 timeout=15,
@@ -108,7 +108,7 @@ class FearGreedCollector(BaseCollector):
             self.logger.info(f"Fear & Greed: {len(df)} records")
             return df
 
-        except requests.RequestException as e:
+        except Exception as e:
             self.logger.error(f"Lỗi kết nối Fear & Greed API: {e}")
             return pd.DataFrame()
 

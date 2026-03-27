@@ -1,6 +1,9 @@
 """
-Gold Predictor - Giavang.org Collector
+Gold Predictor - Giavang.org Collector (V2 - Resilient)
 Thu thập giá vàng SJC/PNJ/DOJI từ giavang.org.
+
+Dùng ResilientSession với UA rotation, retry logic.
+Delay crawl lịch sử: 2-3s (random) giữa các requests.
 
 Nguồn dữ liệu:
 - Trang chính: https://giavang.org/ (giá realtime nhiều đơn vị)
@@ -19,12 +22,13 @@ Nguồn dữ liệu:
 - Theo dõi spread mua-bán theo thời gian
 """
 
+import random
 import re
+import time
 from datetime import date, datetime, timedelta
 from typing import Optional
 
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 
 from app.services.data_collector.base_collector import BaseCollector
@@ -32,11 +36,6 @@ from app.db.models import GoldPrice
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-}
 
 # URL patterns
 BASE_URL = "https://giavang.org"
@@ -69,7 +68,14 @@ class GiavangOrgCollector(BaseCollector):
         self.logger.info("Fetching giavang.org trang chinh...")
 
         try:
-            response = requests.get(BASE_URL, headers=HEADERS, timeout=15)
+            session = self._get_session()
+            
+            # Referer chain: truy cập trang chính trước
+            response = session.get(
+                BASE_URL,
+                headers={"Referer": "https://www.google.com/"},
+                timeout=15,
+            )
             response.raise_for_status()
             response.encoding = "utf-8"
 
@@ -94,7 +100,7 @@ class GiavangOrgCollector(BaseCollector):
             self.logger.warning("giavang.org: Khong parse duoc du lieu gia")
             return pd.DataFrame()
 
-        except requests.RequestException as e:
+        except Exception as e:
             self.logger.error(f"giavang.org fetch error: {e}")
             return pd.DataFrame()
 
@@ -115,7 +121,12 @@ class GiavangOrgCollector(BaseCollector):
             url = f"{HISTORY_URL}/{current.strftime('%Y-%m-%d')}.html"
 
             try:
-                response = requests.get(url, headers=HEADERS, timeout=10)
+                session = self._get_session()
+                response = session.get(
+                    url,
+                    headers={"Referer": BASE_URL},
+                    timeout=10,
+                )
                 if response.status_code == 200:
                     response.encoding = "utf-8"
                     soup = BeautifulSoup(response.text, "html.parser")
@@ -132,7 +143,7 @@ class GiavangOrgCollector(BaseCollector):
                 else:
                     self.logger.warning(f"  {current}: HTTP {response.status_code}")
 
-            except requests.RequestException as e:
+            except Exception as e:
                 error_count += 1
                 self.logger.warning(f"  {current}: Error - {e}")
                 if error_count > 5:
@@ -141,9 +152,8 @@ class GiavangOrgCollector(BaseCollector):
 
             current += timedelta(days=1)
 
-            # Rate limit: tránh bị block
-            import time
-            time.sleep(0.5)
+            # Rate limit: 2-3s random delay (tăng từ 0.5s để tránh bị block)
+            time.sleep(random.uniform(2.0, 3.0))
 
         if all_records:
             df = pd.DataFrame(all_records)

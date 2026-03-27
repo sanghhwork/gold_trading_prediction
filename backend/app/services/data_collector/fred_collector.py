@@ -1,6 +1,8 @@
 """
-Gold Predictor - FRED Data Collector
+Gold Predictor - FRED Data Collector (V2 - Resilient)
 Thu thập dữ liệu kinh tế vĩ mô từ FRED API (Federal Reserve Economic Data).
+Dùng ResilientSession với retry logic.
+Đọc API key qua get_settings() (nhất quán với pattern config).
 
 Series:
 - CPIAUCSL: CPI All Items (Consumer Price Index)
@@ -21,7 +23,6 @@ from datetime import date, timedelta
 from typing import Optional
 
 import pandas as pd
-import requests
 from sqlalchemy.orm import Session
 
 from app.services.data_collector.base_collector import BaseCollector
@@ -52,16 +53,17 @@ class FREDCollector(BaseCollector):
             self._load_api_key()
 
     def _load_api_key(self):
-        """Load FRED API key từ config/env."""
-        import os
-        self.api_key = os.getenv("FRED_API_KEY", "")
+        """Load FRED API key từ config (get_settings pattern)."""
+        try:
+            from app.config import get_settings
+            settings = get_settings()
+            self.api_key = getattr(settings, 'fred_api_key', '') or ''
+        except Exception:
+            pass
         
         if not self.api_key:
-            try:
-                from app.config import settings
-                self.api_key = getattr(settings, "fred_api_key", "")
-            except (ImportError, AttributeError):
-                pass
+            import os
+            self.api_key = os.getenv("FRED_API_KEY", "")
         
         if not self.api_key:
             self.logger.warning(
@@ -130,7 +132,7 @@ class FREDCollector(BaseCollector):
         self.logger.info(f"Fetching FRED {series_id} ({indicator_name}): {start_date} → {end_date}")
 
         try:
-            response = requests.get(
+            response = self._get_session().get(
                 FRED_API_BASE,
                 params={
                     "series_id": series_id,
@@ -172,7 +174,7 @@ class FREDCollector(BaseCollector):
             self.logger.info(f"FRED {series_id}: {len(df)} records")
             return df
 
-        except requests.RequestException as e:
+        except Exception as e:
             self.logger.error(f"Lỗi kết nối FRED API: {e}")
             return pd.DataFrame()
 
